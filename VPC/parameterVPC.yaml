@@ -1,7 +1,7 @@
 [
   {
     "ParameterKey" : "EnvironmentName",
-    "parametValue" : "My First VPC"
+    "ParameterValue" : "My First VPC"
   },
   {
     "ParameterKey" : "VpcCIDR",
