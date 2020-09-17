@@ -1,0 +1,21 @@
+Description:
+    Creating a VPC
+Parameters:
+    VpcCIDR:
+        Description: CIDR block for VPC
+        Type: String
+        Default: 10.0.0.0/16
+    EnvironmentName:
+        Description: Test VPC
+        Type: String
+
+Resources:
+    myVPC:
+        Type: AWS::EC2::VPC
+        Properties: 
+            CidrBlock: !Ref VpcCIDR
+            EnableDnsHostnames: true
+            Tags:
+                - Key : Name
+                  Value: !Ref EnvironmentName
+        
