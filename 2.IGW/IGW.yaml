@@ -1,0 +1,32 @@
+Description:
+    Adding IGW to VPC 
+
+Parameters:
+    EnvironmentName:
+        Description: Name for Resources
+        Type: String
+    VpcCIDR:
+        Description: CIDR Block for VPC
+        Type: String
+        Default: 10.0.0.0/16
+
+Resources:
+    VPCwithIGW:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: !Ref VpcCIDR
+            EnableDnsHostnames: true
+            Tags:
+                - Key : Name
+                  Value : !Ref EnvironmentName
+    myInternetGateway:
+        Type: AWS::EC2::InternetGateway
+        Properties:
+            Tags:
+                - Key : Name
+                  Value : !Ref EnvironmentName
+    IGWattachVPC:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            InternetGatewayId : !Ref myInternetGateway
+            VpcId: !Ref VPCwithIGW
