@@ -1,0 +1,108 @@
+Description:
+  VPC+IGW+SUBNET+ NAT Gateway addition
+
+Parameters:
+    EnvironmentName:
+        Description: EnvironmentName
+        Type: String
+    VpcCIDR:
+        Description: CIDR Block of VPC
+        Type: String
+        Default: "10.0.0.0/16"
+    PublicSubnet1CIDR:
+        Description: Public Subnet 1
+        Type: String
+        Default: 10.0.0.0/24
+    PublicSubnet2CIDR:
+        Description: Public Subnet 2
+        Type: String
+        Default: 10.0.1.0/24
+    PrivateSubnet1CIDR:
+        Description: Private Subnet 1
+        Type: String
+        Default: 10.0.2.0/24
+    PrivateSubnet2CIDR:
+        Description: Private Subnet 2
+        Type: String
+        Default: 10.0.3.0/24
+
+Resources:
+    VPC:
+        Type: AWS::EC2::VPC
+        Properties:
+          CidrBlock: !Ref VpcCIDR
+          EnableDnsHostnames: true
+          Tags:
+              - Key: Name
+                Value: !Ref EnvironmentName
+    InternetGW:
+        Type: AWS::EC2::InternetGateway
+        Properties:
+            Tags:
+                - Key: Name
+                  Value: !Ref EnvironmentName
+    InternetGWAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            VpcId: !Ref VPC
+            InternetGatewayId: !Ref InternetGW
+    PublicSubnet1:
+        Type: AWS::EC2::Subnet 
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [0, !GetAZs '']
+            CidrBlock: !Ref PublicSubnet1CIDR
+            MapPublicIpOnLaunch: true
+            Tags:
+            - Key: Name
+              Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+    PublicSubnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [1, !GetAZs '']
+            CidrBlock: !Ref PublicSubnet2CIDR
+            MapPublicIpOnLaunch: true
+            Tags:
+                - Key : Name
+                  Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+    PrivateSubnet1:
+        Type : AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [0, !GetAZs '']
+            CidrBlock: !Ref PrivateSubnet1CIDR
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
+    PrivateSubnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [1, !GetAZs '']
+            CidrBlock: !Ref PrivateSubnet2CIDR
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: !Sub ${EnvironmentName} Private Subnet (AZ2)       
+    NatGateway1:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            AllocationId: !GetAtt NatGateway1EIP.AllocationId
+            SubnetId: !Ref PublicSubnet1
+    NatGateway2:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            AllocationId: !GetAtt  NatGateway2EIP.AllocationId
+            SubnetId: !Ref PublicSubnet2
+    NatGateway1EIP:
+        Type: AWS::EC2::EIP 
+        DependsOn: InternetGWAttachment
+        Properties:
+            Domain: vpc
+    NatGateway2EIP:
+        Type: AWS::EC2::EIP 
+        DependsOn : InternetGWAttachment
+        Properties:
+            Domain: vpc        
